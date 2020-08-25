@@ -9,13 +9,16 @@ from api_helper import notify
 
 class ZabbixConnectionTrigger(ZabbixConnection):
 
-    def get_triggers_description(self, host_name, priority=3):
+    def get_triggers_description(self, priority=3):
         """Get dictionary of trigger ID and description for triggers with priority >= 3"""
+
+        load_config()
+        HOST_NAME = config['zabbix_api']['HOST_IN_ZABBIX']
 
         results = self.session.do_request(
             "trigger.get", {
                 "filter":
-                {"host": [host_name]}, "only_true": True
+                {"host": [HOST_NAME]}, "only_true": True
             })["result"]
         if results == []:
             return None
@@ -38,8 +41,7 @@ def get_triggers():
 
     with ZabbixConnectionTrigger(USER, "https://" + ZABBIX_SERVER, PASSWORD) as conn:
         conn.login(USER, "https://" + ZABBIX_SERVER, PASSWORD)
-        host_name = 'openstack-monitoring'
-        trigger_dict = conn.get_triggers_description(host_name)
+        trigger_dict = conn.get_triggers_description()
         # print(trigger_dict)
         return trigger_dict
 
@@ -49,7 +51,7 @@ if __name__ == "__main__":
     trigger_data = get_triggers()
     if trigger_data is None:
         content = ''
-        print("No triggers!")
+        #print("No triggers!")
         notify(content)
     else:
         val = []
